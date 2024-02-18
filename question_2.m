@@ -1,7 +1,4 @@
-
-clc;
-clear;
-clc;
+clc; clear; close all;
 
 alpha_values = 0.05:0.05:0.95;
 alpha_pmf_plot = [0.05, 0.5, 0.95];
@@ -27,12 +24,24 @@ for i = 1:length(alpha_values)
     [codeword, huff_code_lengths(i)] = run_length_encoder_length(run_lengths_vector,unique_lengths, pmf); 
     rle_code_lengths(i)=length(codeword);
     % Calculate compression ratio (approximate)
-    source_stream_length = length(source_stream_str); % Original length in bits
-    compression_ratios(i) = source_stream_length / rle_code_lengths(i);
+    compression_ratios(i) = L / rle_code_lengths(i);
     all_unique_lengths = union(all_unique_lengths, unique_lengths);
+
+        % Create a struct to store data for this alpha value
+    alpha_data = struct(...
+        'alpha', alpha_values(i), ...
+        'lengths', unique_lengths, ...
+        'pmf', pmf, ...
+        'codeword', codeword, ... 
+        'rle_code_length', rle_code_lengths(i), ...
+        'huff_code_length', huff_code_lengths(i), ...
+        'compression_ratio', compression_ratios(i) ...
+    );
+
     
     % Store PMF data with a valid field name
-    pmf_data{i} = struct('lengths', unique_lengths, 'pmf', pmf); 
+    %pmf_data{i} = struct('lengths', unique_lengths, 'pmf', pmf); 
+    pmf_data{i} = alpha_data;
 end
 
 % Initialize data for plotting

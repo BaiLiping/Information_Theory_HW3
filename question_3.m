@@ -1,70 +1,54 @@
+clc; clear; close all;
+
 alpha_values = 0.05:0.05:0.95;
-alpha_pmf_plot = [0.05, 0.5, 0.95];
-indices = [1,10,19]; 
-all_unique_lengths = []; 
-pmf_data = cell(length(alpha_values), 1); 
+% Data containers
+rle_compression_ratios = zeros(size(alpha_values));
+golomb_compression_ratios = zeros(size(alpha_values));
+ideal_compression_ratios = zeros(size(alpha_values));
 
 L = 19600;
 
 for i = 1:length(alpha_values)
     alpha = alpha_values(i);
     source_stream_str = generate_markov1(alpha, L);  
-    [run_lengths_vector, start_bit] = run_length_encode(source_stream_str);
+    [run_lengths_vector, start_bit] = run_length_encoder(source_stream_str);
 
     unique_lengths = unique(run_lengths_vector);
     frequencies = histc(run_lengths_vector, unique_lengths);
     pmf = frequencies / length(run_lengths_vector);
+
+    [codeword, huff_code_length] = run_length_encoder_length(run_lengths_vector,unique_lengths, pmf); 
+
+    % Modify run lengths for Golomb encoder (subtract 1)
+    modified_run_lengths = run_lengths_vector - 1; 
+
+    % Adaptive Golomb Encoding
+    golomb_encoded = adaptive_golomb_encoder(modified_run_lengths);
     
-    all_unique_lengths = union(all_unique_lengths, unique_lengths);
+    % Compression Ratio Calculations
+    rle_compression_ratios(i) = L / length(codeword);
+    golomb_compression_ratios(i) = L / length(golomb_encoded);
     
-    % Store PMF data with a valid field name
-    pmf_data{i} = struct('lengths', unique_lengths, 'pmf', pmf); 
+    % Ideal Compression Ratio (Theoretical)
+    [unique_lengths, ~, idx] = unique(run_lengths_vector); 
+    probabilities = accumarray(idx, 1) / length(run_lengths_vector);
+    entropy = -sum(probabilities .* log2(probabilities)); 
+    ideal_compression_ratios(i) = L / (entropy * length(run_lengths_vector)); 
+
+
 end
 
-% Initialize data for plotting
-pmf_comparison_unique_length = all_unique_lengths;
-pmf_comparison_pmf = zeros(length(alpha_pmf_plot), length(all_unique_lengths));
 
-% Fill in the PMF data using vectorization
-for i = 1:length(alpha_pmf_plot)
-    index = indices(i);
-    alpha_data = pmf_data{index}; 
-
-    % Find positions of matching lengths directly
-    length_positions = ismember(pmf_comparison_unique_length, alpha_data.lengths); 
-
-    % Assign PMF values in one operation
-    pmf_comparison_pmf(i, length_positions) = alpha_data.pmf; 
-end
-
-% PMF Plot 
-colors = ['r', 'g', 'b']; 
+% Plotting
 figure;
-hold on; 
-for i = 1:length(alpha_pmf_plot)
-    plot(pmf_comparison_unique_length, pmf_comparison_pmf(i, :), ...
-         'Color', colors(i), 'LineWidth', 2, 'DisplayName', sprintf('alpha = %0.2f', alpha_pmf_plot(i)));
-end
+plot(alpha_values, rle_compression_ratios, 'DisplayName', 'Run-Length Encoder', linewidth=2);
+hold on;
+plot(alpha_values, golomb_compression_ratios, 'DisplayName', 'Golomb Encoder', linewidth=2);
+plot(alpha_values, ideal_compression_ratios, 'DisplayName', 'Ideal Encoder', linewidth=2);
 hold off;
 
-% Change y-axis to log scale
-set(gca, 'YScale', 'log');  
-
-% Add labels, title, and legend
-xlabel('Run Length'); 
-ylabel('PMF (log scale)'); 
-title('PMF Comparison for Different \alpha Values');
-legend('show'); 
-grid on; 
-
-
-% Plotting the compression ratio vs alpha values with a thicker line
-figure;
-plot(alpha_values, compression_ratios, '-o', 'LineWidth', 2);  % Set line width to 2
 xlabel('\alpha Values');
 ylabel('Compression Ratio');
-title('Compression Ratio vs \alpha Values');
-grid on;
-
-% Adding a legend
-legend('Compression Ratio', 'Location', 'best');
+title('Compression Performance Comparison');
+legend('show');
+grid on; 

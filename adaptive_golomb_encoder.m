@@ -12,15 +12,16 @@ function golomb_code = adaptive_golomb_encoder(run_lengths)
     golomb_code = []; % Initialize output
     
     % Process each run-length value
-    for r = run_lengths
+    for i = 1:length(run_lengths)  % Loop through run lengths
+        r = run_lengths(i);
         k = max(0, ceil(log2(A/(2*N)))); % Calculate Golomb parameter k
     
-        % Encode using Golomb code (you'll need a Golomb encoding function)
-        unary_part = repmat('1', 1, floor(r/2^k))  '0';
+        unary_part = [repmat('1', 1, floor(r / 2^k)), '0']; 
         remainder_part = dec2bin(r - 2^k, k);  
-        golomb_code = [unary_part remainder_part];
+        codeword = [unary_part remainder_part];  
+        
     
-        golomb_code = [golomb_code golomb_code]; % Append to output
+        golomb_code = [golomb_code codeword]; % Append the new codeword
     
         % Adaptive Update
         if N == Nmax
@@ -31,5 +32,4 @@ function golomb_code = adaptive_golomb_encoder(run_lengths)
         N = N + 1;
     end
     
-    end
-    
+end

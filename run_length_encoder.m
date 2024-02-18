@@ -1,18 +1,26 @@
-function [encoded_output, huff_length] = run_length_encoder(run_lengths,unique_lengths,pmf)
+function [run_lengths, start_bit] = run_length_encode(binary_sequence)
+    % Validates input to ensure it's a character array (string) 
+    if ~ischar(binary_sequence)
+        error('Input binary_sequence must be a character array (string).');
+    end
 
-   % Huffman coding for unique_lengths
-   [dict, huff_length] = huffmandict(unique_lengths, pmf); 
+    % Initialization
+    current_char = binary_sequence(1);
+    start_bit = str2double(current_char); % Convert character '0' or '1' to numerical value
+    run_lengths = [];
+    current_run_length = 1;
 
-    % Initialize the encoded output 
-    encoded_output = '';
-
-    % Iterate over each run_length and encode using the dictionary
-    for i = 1:length(run_lengths)
-        % Find the index in dict where the symbol matches run_lengths(i)
-        index = find([dict{:, 1}] == run_lengths(i));
-        if ~isempty(index)
-            code = dict{index, 2}; % Get the Huffman code for the symbol
-            encoded_output = [encoded_output code]; % Concatenate the code
+    % Iteration and Encoding
+    for i = 2:length(binary_sequence)
+        if binary_sequence(i) == current_char
+            current_run_length = current_run_length + 1;
+        else
+            run_lengths = [run_lengths, current_run_length];
+            current_char = binary_sequence(i);
+            current_run_length = 1;
         end
     end
-end 
+
+    % Append the length of the last run
+    run_lengths = [run_lengths, current_run_length];
+end

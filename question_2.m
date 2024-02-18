@@ -18,14 +18,14 @@ L = 19600;
 for i = 1:length(alpha_values)
     alpha = alpha_values(i);
     source_stream_str = generate_markov1(alpha, L);  
-    [run_lengths_vector, start_bit] = run_length_encode(source_stream_str);
+    [run_lengths_vector, start_bit] = run_length_encoder(source_stream_str);
 
     unique_lengths = unique(run_lengths_vector);
     frequencies = histc(run_lengths_vector, unique_lengths);
     pmf = frequencies / length(run_lengths_vector);
 
-    [rle_code(i), huff_code_lengths(i)] = run_length_encoder(run_lengths_vector,unique_lengths, pmf); 
-     rle_code_lengths(i)=length(rle_code(i));
+    [codeword, huff_code_lengths(i)] = run_length_encoder_length(run_lengths_vector,unique_lengths, pmf); 
+    rle_code_lengths(i)=length(codeword);
     % Calculate compression ratio (approximate)
     source_stream_length = length(source_stream_str); % Original length in bits
     compression_ratios(i) = source_stream_length / rle_code_lengths(i);

@@ -1,13 +1,4 @@
-function source_stream = generate_markov1(alpha, L)
-    % Generates a Markov-1 character string of 0s and 1s
-    %
-    % Inputs:
-    %   alpha: Transition probability
-    %   L:     Length of the desired source stream
-    %
-    % Output:
-    %   source_stream: Binary source stream (array of 0s and 1s)
-
+function source_stream_str = generate_markov1(alpha, L)
     % Initial state (assume 0 or 1 with equal probability)
     source_stream(1) = randi([0, 1]);  % Generate a random 0 or 1 as the first bit
 
@@ -29,5 +20,11 @@ function source_stream = generate_markov1(alpha, L)
                 source_stream(i) = 1;
             end
         end
+    end
+    % Conversion to string
+    source_stream_str = '';  % Initialize an empty string
+    for i = 1:length(source_stream)
+        source_stream_str = [source_stream_str char(source_stream(i) + '0')]; 
     end    
+    
 end

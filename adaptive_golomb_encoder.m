@@ -1,9 +1,4 @@
 function golomb_code = adaptive_golomb_encoder(run_lengths)
-    % Adaptive Golomb Coder Implementation
-    %
-    % Parameters:
-    %   run_lengths:  A vector of run-length values
-    
     % Initialize variables
     N = 1;
     A = mean(run_lengths); % Initial estimate of average run length
@@ -19,10 +14,7 @@ function golomb_code = adaptive_golomb_encoder(run_lengths)
         unary_part = [repmat('1', 1, floor(r / 2^k)), '0']; 
         remainder_part = dec2bin(r - 2^k, k);  
         codeword = [unary_part remainder_part];  
-        
-    
-        golomb_code = [golomb_code codeword]; % Append the new codeword
-    
+        golomb_code = [golomb_code codeword];
         % Adaptive Update
         if N == Nmax
             A = floor(A/2);

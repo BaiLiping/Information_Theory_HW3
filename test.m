@@ -5,7 +5,11 @@ code_entropies = zeros(size(alpha_values));
 
 for i = 1:length(alpha_values)
     alpha = alpha_values(i);
+    beta = alpha;
     stream = generate_markov1(alpha, L);
+    % Choose your N and P values
+    N = 22;
+    P = 8;
 
     % Entropy of Markov-1 stream
     markov_entropies(i) = estimate_entropy(stream); 

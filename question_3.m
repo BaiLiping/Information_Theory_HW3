@@ -4,7 +4,7 @@ alpha_values = 0.05:0.05:0.95;
 % Data containers
 rle_compression_ratios = zeros(size(alpha_values));
 golomb_compression_ratios = zeros(size(alpha_values));
-entropy_compression = zeros(size(alpha_values));
+theoretical_compression = zeros(size(alpha_values));
 
 L = 19600;
 
@@ -29,11 +29,11 @@ for i = 1:length(alpha_values)
     rle_compression_ratios(i) = L / length(codeword);
     golomb_compression_ratios(i) = L / length(golomb_encoded);
     
-    % Ideal Compression Ratio (Theoretical)
+    % Theoretical Compression Ratio
     [unique_lengths, ~, idx] = unique(run_lengths_vector); 
     probabilities = accumarray(idx, 1) / length(run_lengths_vector);
     entropy = -sum(probabilities .* log2(probabilities)); 
-    entropy_compression(i) = L / (entropy * length(run_lengths_vector)); 
+    theoretical_compression(i) = L / (entropy * length(run_lengths_vector)); 
 end
 
 
@@ -42,7 +42,7 @@ figure;
 plot(alpha_values, rle_compression_ratios, 'DisplayName', 'Run-Length Encoder', linewidth=2);
 hold on;
 plot(alpha_values, golomb_compression_ratios, 'DisplayName', 'Golomb Encoder', linewidth=2);
-plot(alpha_values, entropy_compression, 'DisplayName', 'Ideal Encoder', linewidth=2);
+plot(alpha_values, theoretical_compression, 'DisplayName', 'Ideal Encoder', linewidth=2);
 hold off;
 
 xlabel('\alpha Values');

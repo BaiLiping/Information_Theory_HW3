@@ -1,15 +1,18 @@
 clc; clear; close all;
 
-alpha_values = 0.05:0.05:0.95;
+L = 20000; 
+alpha_values = 0.1:0.05:0.9;
+N = 22;
+P = 8;
 % Data containers
-rle_compression_ratios = zeros(size(alpha_values));
 golomb_compression_ratios = zeros(size(alpha_values));
-entropy_compression = zeros(size(alpha_values));
+arithmatic_compression_ratios = zeros(size(alpha_values));
+theoretical_compression = zeros(size(alpha_values));
 
-L = 19600;
 
 for i = 1:length(alpha_values)
     alpha = alpha_values(i);
+    beta = alpha;
     source_stream_str = generate_markov1(alpha, L);  
     [run_lengths_vector, start_bit] = run_length_encoder(source_stream_str);
 
@@ -24,25 +27,20 @@ for i = 1:length(alpha_values)
 
     % Adaptive Golomb Encoding
     golomb_encoded = adaptive_golomb_encoder(modified_run_lengths);
+    arithmatic_encoded = markov1_arithmetic_encoder(source_stream_str, alpha, beta, N, P); 
     
     % Compression Ratio Calculations
-    rle_compression_ratios(i) = L / length(codeword);
     golomb_compression_ratios(i) = L / length(golomb_encoded);
-    
-    % Ideal Compression Ratio (Theoretical)
-    [unique_lengths, ~, idx] = unique(run_lengths_vector); 
-    probabilities = accumarray(idx, 1) / length(run_lengths_vector);
-    entropy = -sum(probabilities .* log2(probabilities)); 
-    entropy_compression(i) = L / (entropy * length(run_lengths_vector)); 
+    arithmatic_compression_ratios(i) = L/length(arithmatic_encoded);
+
 end
 
 
 % Plotting
 figure;
-plot(alpha_values, rle_compression_ratios, 'DisplayName', 'Run-Length Encoder', linewidth=2);
 hold on;
 plot(alpha_values, golomb_compression_ratios, 'DisplayName', 'Golomb Encoder', linewidth=2);
-plot(alpha_values, entropy_compression, 'DisplayName', 'Ideal Encoder', linewidth=2);
+plot(alpha_values, arithmatic_compression_ratios, 'DisplayName', 'Arithmatic Encoder', linewidth=2);
 hold off;
 
 xlabel('\alpha Values');

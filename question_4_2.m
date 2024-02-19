@@ -14,11 +14,10 @@ for i = 1:length(alpha_values)
     % Generate Markov-1 Data
     source_stream_str = generate_markov1(alpha, L); 
     source_stream_num = source_stream_str - '0';  
-    % Calculate probabilities
-    pi0 = sum(source_stream_num == 0) / L;
-    pi1 = 1 - p0;
-    % H=−π0​[αlog(α)+(1−α)log(1−α)]−π1​[βlog(β)+(1−β)log(1−β)]
-    H = -pi0*(alpha*log2(alpha) + (1-alpha)*log2(1-alpha))-pi1*(alpha*log2(alpha) + (1-alpha)*log2(1-alpha));
+    % Calculate estimated terminal probabilities
+    p0 = sum(source_stream_num == 0) / L;
+    p1 = 1 - p0;
+    H = -p0*log2(p0) - p1*log2(p1);
     markov1_entropy(i)=H;
     encoded_stream = markov1_arithmetic_encoder(source_stream_str, alpha, N, P);
     p0 = sum(encoded_stream == 0) / length(encoded_stream);

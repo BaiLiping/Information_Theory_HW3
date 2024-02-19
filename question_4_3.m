@@ -15,14 +15,16 @@ for i = 1:length(alpha_values)
     source_stream_str = generate_markov1(alpha, L); 
     source_stream_num = source_stream_str - '0';  
     % Calculate entropy rate H(x_1|x_0)
-    p0 = alpha;
-    p1 = 1 - p0;
-    H = -p0*log2(p0) - p1*log2(p1);
+    % Calculate estimated terminal probabilities
+    pi0 = sum(source_stream_num == 0) / L;
+    pi1 = 1 - pi0;
+    % calculate entropy rate
+    % H=−π0​[αlog(α)+(1−α)log(1−α)]−π1​[βlog(β)+(1−β)log(1−β)]
+    H = -pi0*(alpha*log2(alpha) + (1-alpha)*log2(1-alpha))-pi1*(alpha*log2(alpha) + (1-alpha)*log2(1-alpha));
     markov1_entropy(i)=H;
     encoded_stream = markov1_arithmetic_encoder(source_stream_str, alpha, N, P);
-    p0 = sum(encoded_stream == 0) / length(encoded_stream);
-    p1 = 1-p0;
-    H = -p0*log2(p0) - p1*log2(p1);
+    m=10;
+    H=calculate_entropy_rate(encoded_stream,m);
     code_stream_entropy(i) = H;
 end
 
@@ -35,5 +37,5 @@ hold off;
 xlabel('\alpha Values');
 ylabel('Estimated Entropy');
 title('Entropy of Markov-1 Stream vs. Encoded Stream');
-legend('show');
+legend('show', 'Location', 'best');
 grid on; 

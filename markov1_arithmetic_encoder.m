@@ -8,32 +8,33 @@ function encoded_bits = markov1_arithmetic_encoder(input_stream, alpha, N, P)
     beta = alpha; 
     encoded_bits = []; 
     mask = 2^(N+P) - 1; 
-    scaling_factor = 100; % a scaling factor is added for plotting purpose
-    alpha_scaled = round(alpha * scaling_factor); 
-    beta_scaled = round(beta * scaling_factor);
 
     for n = 1:length(input_stream)
         x_current = input_stream(n); 
-        % compute for p0
+        % compute for fx0
+        % notice that for memory less source, fx0 and fx1 is constant
+        % however, for markov1 proces, fx0 and fx1 changes depending on the previous bit 
         if n == 1
-            p0_scaled = 0.5;
+            fx0 = 0.5;
         else
             if input_stream(n-1) == '0'
                 if x_current == '0' 
-                    p0_scaled = (scaling_factor - alpha_scaled); 
+                    fx0 = 1-alpha; 
                 else 
-                    p0_scaled = alpha_scaled;
+                    fx1 = alpha;
                 end
             else
                 if x_current == '0' 
-                    p0_scaled = beta_scaled;
+                    fx0 = beta;
                 else 
-                    p0_scaled = (scaling_factor - beta_scaled); 
+                    fx1 = 1-beta; 
                 end
             end
         end
         % T = A * p0
-        T = A * p0_scaled;
+        % p0 = ⌊2^P* f_X(x = 0)⌋
+        p0 =floor(2^P*fx0);
+        T = A * p0;
         % IF xn = 1
         %     C = C + T
         %     T = bitshift(A,P) - T;

@@ -35,5 +35,5 @@ hold off;
 xlabel('\alpha Values');
 ylabel('Estimated Entropy');
 title('Entropy of Markov-1 Stream vs. Encoded Stream');
-legend('show');
+legend('show', 'Location', 'best');
 grid on; 

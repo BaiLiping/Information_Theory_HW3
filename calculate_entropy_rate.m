@@ -1,53 +1,22 @@
 function H = calculate_entropy_rate(encoded_stream, m)
-    % Initialize a map to store context counts
-    context_counts = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    encoded_str = num2str(encoded_stream);
+    symbol_counts = [sum(encoded_stream == 0), sum(encoded_stream == 1)];
+    symbol_probs = symbol_counts / length(encoded_stream);
     
-    % Convert the input stream to char if it is a string
-    if isstring(encoded_stream)
-        encoded_stream = char(encoded_stream);
+    block_probs = zeros(1, 2^m);
+    for i = m+1:length(encoded_stream)
+       context = encoded_str(i-m:i-1);
+       context_index = bin2dec(context) + 1; % Convert binary to decimal index
+       block_probs(context_index) = block_probs(context_index) + 1;
     end
-
-    % Count occurrences for each context of length m
-    for i = 1:(length(encoded_stream) - m)
-        context = encoded_stream(i:i+m-1);
-        next_symbol = encoded_stream(i+m);
-        
-        % Convert context to char to use as a key
-        context_char = char(context);
-        
-        if ~isKey(context_counts, context_char)
-            context_counts(context_char) = containers.Map('KeyType', 'char', 'ValueType', 'double');
+    block_probs = block_probs / (length(encoded_stream) - m);
+    block_entropies = zeros(1, 2^m);
+    for i = 1:2^m
+        if block_probs(i) > 0
+            p = block_probs(i);
+            block_entropies(i) = -p * log2(p) - (1-p) * log2(1-p);
         end
-        symbol_counts = context_counts(context_char);
-        if isKey(symbol_counts, char(next_symbol))
-            symbol_counts(char(next_symbol)) = symbol_counts(char(next_symbol)) + 1;
-        else
-            symbol_counts(char(next_symbol)) = 1;
-        end
-
     end
-    
-    % Initialize total entropy
-    total_entropy = 0;
-    
-    % Calculate conditional entropy for each context
-    context_keys = keys(context_counts);
-    for i = 1:length(context_keys)
-        context = context_keys{i};
-        symbol_counts = context_counts(context);
-        context_total = sum(cell2mat(values(symbol_counts)));
-        context_entropy = 0;
-        
-        symbol_keys = keys(symbol_counts);
-        for j = 1:length(symbol_keys)
-            symbol = symbol_keys{j};
-            count = symbol_counts(symbol);
-            p_symbol_given_context = count / context_total;
-            context_entropy = context_entropy - p_symbol_given_context * log2(p_symbol_given_context);
-        end
-        total_entropy = total_entropy + context_entropy;
-    end
-    
-    % Average the entropy over all contexts
-    H = total_entropy / length(context_keys);
+    H = block_entropies * block_probs'; 
 end
+    

@@ -8,6 +8,7 @@ for i = 1:length(alpha_values)
     source_stream = generate_markov1(alpha, L);
 
     % Run-length encoding
+    % Run-length encoding
     [encoded_stream, start_bit] = rlencode(source_stream); 
     run_lengths = encoded_stream(:, 1);
 

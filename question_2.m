@@ -9,38 +9,29 @@ huff_code_lengths = zeros(size(alpha_values));
 compression_ratios = zeros(size(alpha_values));  
 all_unique_lengths = []; 
 pmf_data = cell(length(alpha_values), 1); 
-
 L = 19600;
 
 for i = 1:length(alpha_values)
     alpha = alpha_values(i);
     source_stream_str = generate_markov1(alpha, L);  
-    [run_lengths_vector, start_bit] = run_length_encoder(source_stream_str);
-
-    unique_lengths = unique(run_lengths_vector);
-    frequencies = histc(run_lengths_vector, unique_lengths);
-    pmf = frequencies / length(run_lengths_vector);
-
-    [codeword, huff_code_lengths(i)] = run_length_encoder_length(run_lengths_vector,unique_lengths, pmf); 
-    rle_code_lengths(i)=length(codeword);
+    [run_lengths_vector,unique_lengths,pmf] = generate_run_lengths_vector(source_stream_str);
+    run_length_encoded = run_length_encoder(run_lengths_vector,unique_lengths, pmf); 
+    rle_code_lengths(i)=length(run_length_encoded);
     % Calculate compression ratio (approximate)
     compression_ratios(i) = L / rle_code_lengths(i);
     all_unique_lengths = union(all_unique_lengths, unique_lengths);
 
-        % Create a struct to store data for this alpha value
+    % Create a struct to store data for this alpha value
     alpha_data = struct(...
         'alpha', alpha_values(i), ...
         'lengths', unique_lengths, ...
         'pmf', pmf, ...
-        'codeword', codeword, ... 
+        'codeword', run_length_encoded, ... 
         'rle_code_length', rle_code_lengths(i), ...
         'huff_code_length', huff_code_lengths(i), ...
         'compression_ratio', compression_ratios(i) ...
     );
-
-    
     % Store PMF data with a valid field name
-    %pmf_data{i} = struct('lengths', unique_lengths, 'pmf', pmf); 
     pmf_data{i} = alpha_data;
 end
 

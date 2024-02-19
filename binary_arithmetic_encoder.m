@@ -14,6 +14,11 @@ function encoded_bits = binary_arithmetic_encoder(input_stream, p0, N, P)
     % Core Encoding Loop
     for n = 1:length(input_stream)
         xn = input_stream(n); 
+
+
+
+
+        
         T = A * p0;  % Calculate scaled probability interval
     
         if xn == 1 
